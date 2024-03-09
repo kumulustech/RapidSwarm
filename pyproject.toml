@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "rapidswarm"
+version = "0.1.0"
+description = "A tool to automate the discovery, testing, and reporting of network nodes with a variety of hardware interfaces."
+authors = ["Lorenzo Swank <lswank@gmail.com>"]
+license = "Mozilla Public License 2.0"
+readme = "README.md"
+
+
+packages = [
+    { include = "rapidswarm", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.6.3"
+loguru = "^0.7.2"
+pydantic-extra-types = "^2.6.0"
+pyyaml = "^6.0.1"
+argparse = "^1.4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.2"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

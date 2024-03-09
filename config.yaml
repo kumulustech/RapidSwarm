@@ -1,0 +1,12 @@
+scanners:
+  - type: CSVScanner
+    config:
+      csv_data: |
+        node_name,interface_name,mac_address,ip_address
+        node1,eth0,00:11:22:33:44:55,192.168.0.1
+        node1,eth1,00:11:22:33:44:56,192.168.0.2
+        node2,eth0,11:22:33:44:55:66,192.168.1.1
+        node3,ib0,00:02:c9:44:55:66,192.168.1.2
+        node3,eth0,00:02:c9:44:55:67,192.168.1.3
+        
+
