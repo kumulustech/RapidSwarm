@@ -66,11 +66,19 @@ class PingProbe(BaseProbe):
                         universal_newlines=True,
                     )
                     results.append(
-                        {"node": node.id, "interface": interface.id, "output": output}
+                        {
+                            "node": node.id,
+                            "interface": interface.mac_address,
+                            "output": output,
+                        }
                     )
                 except subprocess.CalledProcessError as e:
                     results.append(
-                        {"node": node.id, "interface": interface.id, "output": e.output}
+                        {
+                            "node": node.id,
+                            "interface": interface.mac_address,
+                            "output": e.output,
+                        }
                     )
         return results
 

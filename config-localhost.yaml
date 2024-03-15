@@ -6,9 +6,9 @@ scanners:
         node1,lo0,00:11:22:33:44:55,127.0.0.1
 managers:
   - type: SequentialManager
-    config:
-      probes: 
-        - type: PingProbe
-          config:
-            timeout: 1
-            count: 1
+    config: {}
+    probes: 
+      - type: PingProbe
+        config:
+          timeout: 1
+          count: 1
