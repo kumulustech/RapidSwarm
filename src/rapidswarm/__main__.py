@@ -5,7 +5,7 @@ from pathlib import Path
 from loguru import logger
 from pydantic import ValidationError
 
-from rapidswarm.config import create_scanners, load_config
+from rapidswarm.config import create_managers, create_scanners, load_config
 
 
 class RapidSwarm:
@@ -13,6 +13,8 @@ class RapidSwarm:
         self.config_file = config_file
         self.config = None
         self.scanners = []
+        self.managers = []
+        self.scanned_nodes = []
         self.verbose = verbose
 
     def load_config(self):
@@ -37,13 +39,28 @@ class RapidSwarm:
             raise ValidationError(f"Invalid scanner configuration: {e}") from e
 
     def run_scanners(self):
+        scanned_nodes = []
         for scanner in self.scanners:
             logger.info(f"Running scanner: {type(scanner).__name__}")
             nodes = scanner.scan()
+            scanned_nodes.extend(nodes)
             logger.info("Scanned nodes:")
             for node in nodes:
                 logger.info(node)
             logger.info("")
+        self.scanned_nodes = scanned_nodes
+
+    def create_managers(self):
+        try:
+            self.managers = create_managers(self.config, self.scanned_nodes)
+            logger.debug(f"Created managers: {self.managers}")
+        except ValidationError as e:
+            logger.error(f"Invalid manager configuration: {e}")
+            raise ValidationError(f"Invalid manager configuration: {e}") from e
+
+    def run_managers(self):
+        for manager in self.managers:
+            manager.run()
 
 
 def main():
@@ -75,6 +92,12 @@ def main():
         rapidswarm.load_config()
         rapidswarm.create_scanners()
         rapidswarm.run_scanners()
+
+        # Managers create their own probes from their config.
+        managers = create_managers(rapidswarm.config, rapidswarm.scanned_nodes)
+        for manager in managers:
+            manager.run()
+
     except FileNotFoundError as e:
         logger.error(f"Error: {e}")
     except ValidationError as e:
