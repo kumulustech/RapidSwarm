@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "ReportSimple"
+version = "0.1.0"
+description = "A quick first pass report generate, takes in a specifically foramtted csv and spits out a csv of outliers"
+authors = ["Robert Starmer <robert@kumul.us>"]
+license = "MIT License"
+readme = "README.md"
+
+[project.dependencies]
+numpy = "^1.21.2"
+scipy = "^1.7.1"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.2",
+    "hypothesis>=6.14"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
