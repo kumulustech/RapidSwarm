@@ -16,7 +16,7 @@ def test_network_interface_creation():
     )
     assert interface.mac_address == "00:11:22:33:44:55"
     assert interface.ip_address == IPv4Address("192.168.0.1")
-    assert interface.is_active == True
+    assert interface.is_active
     assert interface.interface_type == NetworkInterfaceType.ETHERNET
 
 

@@ -2,7 +2,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from typing import List
 
-from pydantic import BaseModel, validator
+from pydantic import validator
 
 from .node import Node
 from .scanners import BaseScanner

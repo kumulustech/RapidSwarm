@@ -3,7 +3,7 @@ import io
 import warnings
 from typing import List, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from .network_interface import NetworkInterface
 from .network_interface_type import NetworkInterfaceType
@@ -65,7 +65,8 @@ class CSVScanner(BaseScanner):
         extraneous_fields = csv_fields - node_fields
         if extraneous_fields:
             warnings.warn(
-                f"CSV headers contain the following extraneous fields that won't be parsed by the Node class: {', '.join(extraneous_fields)}"
+                "CSV headers contain the following extraneous fields that won't be "
+                f"parsed by the Node class: {', '.join(extraneous_fields)}"
             )
 
     def scan(self) -> List[Node]:

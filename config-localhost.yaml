@@ -7,7 +7,7 @@ scanners:
 managers:
   - type: SequentialManager
     config: {}
-    probes: 
+    probes:
       - type: PingProbe
         config:
           timeout: 1

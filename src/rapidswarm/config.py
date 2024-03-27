@@ -4,9 +4,10 @@ import yaml
 from loguru import logger
 from pydantic import BaseModel, validator
 
-from .models.csv_scanner import CSVScanner
-from .models.managers import BaseManager, SequentialManager
-from .models.probes import BaseProbe, PingProbe
+from .models.arp_scanner import ARPScanner  # noqa: F401
+from .models.csv_scanner import CSVScanner  # noqa: F401
+from .models.managers import BaseManager, SequentialManager  # noqa: F401
+from .models.probes import BaseProbe, PingProbe  # noqa: F401
 from .models.scanners import BaseScanner
 
 
@@ -110,11 +111,14 @@ def create_scanners(config):
             scanners.append(scanner)
             logger.debug(f"Created scanner: {scanner}")
         except KeyError as e:
-            logger.error(f"Invalid scanner type: {scanner_config.type}")
-            raise ValueError(f"Invalid scanner type: {scanner_config.type}") from e
+            error_message = f"Invalid scanner type: {scanner_config.type}"
+            logger.error(error_message)
+            raise ValueError(error_message) from e
         except Exception as e:
             logger.exception(f"Error creating scanner: {scanner_config.type}")
-            raise
+            raise RuntimeError(
+                f"Unexpected error creating scanner: {scanner_config.type}"
+            ) from e
     return scanners
 
 

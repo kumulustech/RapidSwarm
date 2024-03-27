@@ -16,7 +16,15 @@ class MockScanner(BaseScanner):
 def mock_yaml_safe_load(monkeypatch):
     def mock_load(*args, **kwargs):
         return {
-            "scanners": [{"type": "MockScanner", "config": {"some_key": "some_value"}}]
+            "managers": [
+                {
+                    "name": "manager1",
+                    "type": "SequentialManager",
+                    "config": {},  # Added an empty config here
+                    "probes": [{"type": "DummyProbe", "config": {}}],
+                }
+            ],
+            "scanners": [{"type": "MockScanner", "config": {"some_key": "some_value"}}],
         }
 
     monkeypatch.setattr("yaml.safe_load", mock_load)
@@ -36,12 +44,22 @@ def test_load_config(mock_yaml_safe_load):
         assert isinstance(config, Config)
         assert len(config.scanners) == 1
         assert config.scanners[0].type == "MockScanner"
+        assert len(config.managers) == 1
+        assert config.managers[0].type == "SequentialManager"
+        assert config.managers[0].probes[0].type == "DummyProbe"
         mock_file.assert_called_once_with("dummy_path", "r")
 
 
 def test_create_scanners(mock_scanner_subclasses):
     config_data = {
-        "scanners": [{"type": "MockScanner", "config": {"some_key": "some_value"}}]
+        "managers": [
+            {
+                "type": "SequentialManager",
+                "config": {},  # Added an empty config here
+                "probes": [{"type": "DummyProbe", "config": {}}],
+            }
+        ],
+        "scanners": [{"type": "MockScanner", "config": {"some_key": "some_value"}}],
     }
     config = Config(**config_data)
     scanners = create_scanners(config)

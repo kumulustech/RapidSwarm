@@ -1,3 +1,5 @@
+import re
+import subprocess
 from typing import List, Union
 
 from loguru import logger
@@ -48,14 +50,6 @@ class BaseProbe(BaseModel):
         )
 
 
-# Either we store built-in probes here, or we split all probes off into their own files.
-# If build-in probes remain here, we should move all of the imports to the top.
-# Someone with a strong opinion or a case for either one of those should go for it and
-# document things in the project Wiki.
-import re
-import subprocess
-
-
 class PingProbe(BaseProbe):
     command: str = "ping -c 1"  # This is now just a template.
 
@@ -68,28 +62,25 @@ class PingProbe(BaseProbe):
             self.nodes = []  # Assume we'll get some later.
 
     def execute_command(self) -> str:
+        """Executes the ping command for each node's network interfaces, including the IP address."""
         results = []
         for node in self.nodes:
             for interface in node.network_interfaces:
                 ip_address = interface.ip_address
-                command_with_ip = f"{self.command} {ip_address}"  # Include the IP address in the command.
+                command_with_ip = f"{self.command} {ip_address}"
                 try:
+                    # Use a verbose log message with a specific prefix or pattern
                     logger.debug(
-                        "Executing ping for node: {} on interface: {} with IP: {}",
-                        node.id,
-                        interface.mac_address,
-                        ip_address,
+                        f"[VERBOSE] Executing ping for node: {node.id} on interface: {interface.mac_address} with IP: {ip_address}"
                     )
                     output = subprocess.check_output(
                         command_with_ip.split(),
                         stderr=subprocess.STDOUT,
                         universal_newlines=True,
                     )
-                    logger.info(
-                        "Ping successful for node: {} ({}) with output: {}",
-                        node.id,
-                        interface.mac_address,
-                        output,
+                    # Similarly, for successful ping output
+                    logger.debug(
+                        f"[VERBOSE] Ping successful for node: {node.id} ({interface.mac_address}) with output: {output}"
                     )
                     results.append(
                         {
@@ -99,11 +90,8 @@ class PingProbe(BaseProbe):
                         }
                     )
                 except subprocess.CalledProcessError as e:
-                    logger.warning(
-                        "Ping failed for node: {} ({}) with error: {}",
-                        node.id,
-                        interface.mac_address,
-                        e.output,
+                    logger.debug(
+                        f"[VERBOSE] Ping failed for node: {node.id} ({interface.mac_address}) with error: {e.output}"
                     )
                     results.append(
                         {
@@ -117,7 +105,8 @@ class PingProbe(BaseProbe):
     def parse_output(self, output):
         parsed_results = []
         for result in output:
-            success = "1 packets transmitted, 1 received" in result["output"]
+            # Check for success in the output. Adjust the success condition if necessary.
+            success = "1 packets received" in result["output"]
             ping_time = None
             if success:
                 match = re.search(r"time=(\d+\.\d+) ms", result["output"])
