@@ -31,10 +31,15 @@ class SequentialManager(BaseManager):
     probes: List[BaseProbe]
 
     def run(self):
+        results = []
         for probe in self.probes:
             logger.info(f"Running probe: {type(probe).__name__}")
             try:
-                results = probe.run()
-                logger.info(f"Results: {results}")
+                probe_results = probe.run()
+                logger.info(f"Results: {probe_results}")
+                results.append(probe_results)
             except Exception as e:
                 logger.error(f"Error running probe {type(probe).__name__}: {e}")
+        return results
+
+    probes: List[BaseProbe]

@@ -5,9 +5,12 @@ from loguru import logger
 from pydantic import BaseModel, validator
 
 from .models.arp_scanner import ARPScanner  # noqa: F401
+from .models.csv_reporter import CSVReporter  # noqa: F401
 from .models.csv_scanner import CSVScanner  # noqa: F401
+from .models.json_reporter import JSONReporter  # noqa: F401
 from .models.managers import BaseManager, SequentialManager  # noqa: F401
 from .models.probes import BaseProbe, PingProbe  # noqa: F401
+from .models.reporters import BaseReporter
 from .models.scanners import BaseScanner
 
 
@@ -26,6 +29,12 @@ def get_probe_subclasses():
 def get_manager_subclasses():
     subclasses = {cls.__name__: cls for cls in BaseManager.__subclasses__()}
     logger.debug(f"Found manager subclasses: {subclasses}")
+    return subclasses
+
+
+def get_reporter_subclasses():
+    subclasses = {cls.__name__: cls for cls in BaseReporter.__subclasses__()}
+    logger.debug(f"Found reporter subclasses: {subclasses}")
     return subclasses
 
 
@@ -81,9 +90,27 @@ class ManagerConfig(BaseModel):
         return v
 
 
+class ReporterConfig(BaseModel):
+    type: str
+    config: Dict
+
+    @validator("type")
+    def validate_type(cls, v):
+        reporter_subclasses = get_reporter_subclasses()
+        if v not in reporter_subclasses:
+            logger.error(
+                f"Invalid reporter type: {v}. Available types: {', '.join(reporter_subclasses)}"
+            )
+            raise ValueError(
+                f"Invalid reporter type: {v}. Available types: {', '.join(reporter_subclasses)}"
+            )
+        return v
+
+
 class Config(BaseModel):
     scanners: List[ScannerConfig]
     managers: List[ManagerConfig]
+    reporters: List[ReporterConfig]
 
 
 def load_config(config_file):
@@ -120,6 +147,17 @@ def create_scanners(config):
                 f"Unexpected error creating scanner: {scanner_config.type}"
             ) from e
     return scanners
+
+
+def create_reporters(config):
+    reporter_subclasses = get_reporter_subclasses()
+    reporters = []
+    for reporter_config in config.reporters:
+        reporter_class = reporter_subclasses[reporter_config.type]
+        reporter = reporter_class(**reporter_config.config)
+        reporters.append(reporter)
+        logger.debug(f"Created reporter: {reporter}")
+    return reporters
 
 
 def create_managers(config, nodes):

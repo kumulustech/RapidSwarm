@@ -12,3 +12,7 @@ managers:
         config:
           timeout: 1
           count: 1
+reporters:
+  - type: CSVReporter
+    config:
+      output_file: localhost-output.csv

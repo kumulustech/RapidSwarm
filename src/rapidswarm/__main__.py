@@ -5,7 +5,12 @@ from pathlib import Path
 from loguru import logger
 from pydantic import ValidationError
 
-from rapidswarm.config import create_managers, create_scanners, load_config
+from rapidswarm.config import (
+    create_managers,
+    create_reporters,
+    create_scanners,
+    load_config,
+)
 
 
 class RapidSwarm:
@@ -14,6 +19,7 @@ class RapidSwarm:
         self.config = None
         self.scanners = []
         self.managers = []
+        self.reporters = []
         self.scanned_nodes = []
         self.verbose = verbose
 
@@ -38,6 +44,14 @@ class RapidSwarm:
             logger.error(f"Invalid scanner configuration: {e}")
             raise ValidationError(f"Invalid scanner configuration: {e}") from e
 
+    def create_reporters(self):
+        try:
+            self.reporters = create_reporters(self.config)
+            logger.debug(f"Created reporters: {self.reporters}")
+        except ValidationError as e:
+            logger.error(f"Invalid reporter configuration: {e}")
+            raise ValidationError(f"Invalid reporter configuration: {e}") from e
+
     def run_scanners(self):
         scanned_nodes = []
         for scanner in self.scanners:
@@ -59,8 +73,16 @@ class RapidSwarm:
             raise ValidationError(f"Invalid manager configuration: {e}") from e
 
     def run_managers(self):
+        results = []
         for manager in self.managers:
-            manager.run()
+            manager_results = manager.run()
+            results.extend(manager_results)
+
+        # Run the reporters after the managers have finished
+        for reporter in self.reporters:
+            reporter.report(results)
+
+        return results
 
 
 def main():
@@ -93,10 +115,12 @@ def main():
         rapidswarm.create_scanners()
         rapidswarm.run_scanners()
 
-        # Managers create their own probes from their config.
-        managers = create_managers(rapidswarm.config, rapidswarm.scanned_nodes)
-        for manager in managers:
-            manager.run()
+        # Create and run managers and reporters within the RapidSwarm instance
+        rapidswarm.create_managers()
+        rapidswarm.create_reporters()
+        results = rapidswarm.run_managers()
+
+        logger.info(f"Scan and testing results: {results}")
 
     except FileNotFoundError as e:
         logger.error(f"Error: {e}")
@@ -107,6 +131,8 @@ def main():
         if args.verbose:
             logger.debug(f"Config: {rapidswarm.config}")
             logger.debug(f"Scanners: {rapidswarm.scanners}")
+            logger.debug(f"Managers: {rapidswarm.managers}")
+            logger.debug(f"Reporters: {rapidswarm.reporters}")
 
 
 if __name__ == "__main__":

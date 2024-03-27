@@ -1,6 +1,6 @@
 import re
 import subprocess
-from typing import List, Union
+from typing import List, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel
@@ -48,6 +48,13 @@ class BaseProbe(BaseModel):
         raise NotImplementedError(
             "Subclasses must implement the 'execute_command' method."
         )
+
+
+class PingResult(BaseModel):
+    node: str
+    interface: str
+    success: bool
+    ping_time: Optional[float] = None
 
 
 class PingProbe(BaseProbe):
@@ -102,23 +109,21 @@ class PingProbe(BaseProbe):
                     )
         return results
 
-    def parse_output(self, output):
+    def parse_output(self, output) -> List[PingResult]:
         parsed_results = []
         for result in output:
-            # Check for success in the output. Adjust the success condition if necessary.
             success = "1 packets received" in result["output"]
             ping_time = None
             if success:
                 match = re.search(r"time=(\d+\.\d+) ms", result["output"])
                 if match:
                     ping_time = float(match.group(1))
-            parsed_results.append(
-                {
-                    "node": result["node"],
-                    "interface": result["interface"],
-                    "success": success,
-                    "ping_time": ping_time,
-                }
+            parsed_result = PingResult(
+                node=result["node"],
+                interface=result["interface"],
+                success=success,
+                ping_time=ping_time,
             )
+            parsed_results.append(parsed_result)
         logger.debug("Parsed ping results: {}", parsed_results)
         return parsed_results
