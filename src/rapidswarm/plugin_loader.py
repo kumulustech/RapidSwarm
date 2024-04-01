@@ -18,6 +18,7 @@ PLUGIN_DIRECTORY = os.path.join(project_root, "plugins")
 
 
 def discover_plugins(plugin_type, base_class):
+    # TODO: This is the broken part
     logger.info(f"Discovering {plugin_type} plugins in directory: {PLUGIN_DIRECTORY}")
     plugins = {}
     plugin_dir = os.path.join(PLUGIN_DIRECTORY, plugin_type)
