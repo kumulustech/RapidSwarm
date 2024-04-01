@@ -29,18 +29,20 @@ def discover_plugins(plugin_type, base_class):
     for file in os.listdir(plugin_dir):
         if file.endswith("_plugin.py"):
             logger.info(f"Found plugin file: {file}")
-            module_name = file[:-10]  # Remove the "_plugin.py" suffix
-            module_path = f"src.plugins.{plugin_type}.{module_name}"
-            module = importlib.import_module(module_path)
-            import_as = getattr(module, "__import_as__", None)
-            if module_name is None:
-                logger.error(
-                    f"Module {file} does not have a __module_name__ attribute."
-                )
+            # Look through the file for the first instance of a class that inherits from the base_class
+            module_name = file[:-3]  # Remove the .py extension
+            module_path = f"{plugin_type}.{module_name}"
+            try:
+                module = importlib.import_module(module_path, package="plugins")
+            except ImportError as e:
+                logger.error(f"Failed to import {module_path}: {e}")
                 continue
-            plugins[import_as or module_name] = getattr(
-                module, import_as or module_name
-            )
+
+            for name, obj in inspect.getmembers(module, inspect.isclass):
+                if issubclass(obj, base_class) and obj is not base_class:
+                    logger.info(f"Found plugin class: {name}")
+                    plugins[name] = obj
+                    break  # Stop after finding the first subclass
 
     logger.info(
         f"Finished discovering {plugin_type} plugins. Found {len(plugins)} plugins."
