@@ -4,8 +4,8 @@ from typing import List
 
 from pydantic import validator
 
-from .node import Node
-from .scanners import BaseScanner
+from rapidswarm.models.node import Node
+from rapidswarm.models.scanners import BaseScanner
 
 
 class NmapScanner(BaseScanner):

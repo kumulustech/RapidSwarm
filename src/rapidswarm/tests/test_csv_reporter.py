@@ -3,9 +3,8 @@ import os
 from datetime import datetime
 
 import pytest
+from plugins.reporters.reporter_csv_plugin import CSVReporter
 from pydantic import BaseModel
-
-from rapidswarm.models.csv_reporter import CSVReporter
 
 
 class DummyData(BaseModel):

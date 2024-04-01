@@ -2,8 +2,10 @@ import json
 from datetime import datetime
 
 from pydantic import BaseModel
+from rapidswarm.models.reporters import BaseReporter
 
-from .reporters import BaseReporter
+__module_name__ = "reporter_json_plugin"
+__import_as__ = "JSONReporter"
 
 
 class JSONReporter(BaseReporter):

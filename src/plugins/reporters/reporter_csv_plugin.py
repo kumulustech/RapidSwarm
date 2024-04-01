@@ -4,7 +4,9 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
-from .reporters import BaseReporter
+from rapidswarm.models.reporters import BaseReporter
+
+__module_name__ = "reporter_csv_plugin"
 
 
 class CSVReporter(BaseReporter):
@@ -14,10 +16,10 @@ class CSVReporter(BaseReporter):
         arbitrary_types_allowed = True
 
     def report(self, data: Union[BaseModel, List[BaseModel]]):
-        if isinstance(data, BaseModel):
+        if issubclass(type(data), BaseModel):
             data_list = [data]
         elif isinstance(data, list) and all(
-            isinstance(item, BaseModel) for item in data
+            issubclass(type(item), BaseModel) for item in data
         ):
             data_list = data
         else:

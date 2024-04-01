@@ -12,6 +12,9 @@ from rapidswarm.config import (
     load_config,
 )
 
+logger.remove()
+logger.add(sys.stderr, level="DEBUG")
+
 
 class RapidSwarm:
     def __init__(self, config_file, verbose=False):

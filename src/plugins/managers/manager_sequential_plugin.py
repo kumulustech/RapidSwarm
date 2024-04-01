@@ -1,16 +1,9 @@
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from loguru import logger
-from pydantic import BaseModel
 
-from .probes import BaseProbe
-
-
-class BaseManager(BaseModel):
-    config: Optional[Dict[str, Any]] = None
-
-    def run(self):
-        raise NotImplementedError("Subclasses must implement the 'run' method.")
+from rapidswarm.models.manager import BaseManager
+from rapidswarm.models.probes import BaseProbe
 
 
 class SequentialManager(BaseManager):

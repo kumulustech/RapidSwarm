@@ -3,9 +3,9 @@ from typing import List
 
 from pydantic import validator
 
-from .network_interface import NetworkInterface
-from .node import Node
-from .scanners import BaseScanner
+from rapidswarm.models.network_interface import NetworkInterface
+from rapidswarm.models.node import Node
+from rapidswarm.models.scanners import BaseScanner
 
 
 class ARPScanner(BaseScanner):

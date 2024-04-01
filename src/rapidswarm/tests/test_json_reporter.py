@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 from pydantic import BaseModel
 
-from rapidswarm.models.json_reporter import JSONReporter
+from plugins.reporters.reporter_json_plugin import JSONReporter
 
 
 class DummyData(BaseModel):

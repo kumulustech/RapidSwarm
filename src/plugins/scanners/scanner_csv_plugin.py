@@ -4,11 +4,10 @@ import warnings
 from typing import List, Union
 
 from pydantic import Field, validator
-
-from .network_interface import NetworkInterface
-from .network_interface_type import NetworkInterfaceType
-from .node import Node
-from .scanners import BaseScanner
+from rapidswarm.models.network_interface import NetworkInterface
+from rapidswarm.models.network_interface_type import NetworkInterfaceType
+from rapidswarm.models.node import Node
+from rapidswarm.models.scanners import BaseScanner
 
 INFINIBAND_MAC_PREFIX = "00:02:c9"
 NODE_NAME_FIELD = "node_name"
