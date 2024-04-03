@@ -9,6 +9,8 @@ from rapidswarm.config import load_config
 
 def test_load_config_success():
     # Test loading a valid configuration file
+    assert 1 == 1
+
     valid_config = {
         "scanners": [{"type": "CSVScanner", "config": {"csv_file": "valid_file.csv"}}],
         "managers": [{"type": "SequentialManager", "config": {}, "probes": []}],
