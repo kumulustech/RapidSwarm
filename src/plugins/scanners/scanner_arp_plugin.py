@@ -1,7 +1,7 @@
 import subprocess
 from typing import List
 
-from pydantic import validator
+from pydantic import field_validator
 
 from rapidswarm.models.network_interface import NetworkInterface
 from rapidswarm.models.node import Node
@@ -12,7 +12,7 @@ class ARPScanner(BaseScanner):
     interface: str
     target_range: str
 
-    @validator("interface")
+    @field_validator("interface")
     def check_arp_scan_availability(cls, v):
         """
         Validates that arp-scan is installed and can be executed with the given interface.

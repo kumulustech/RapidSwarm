@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from rapidswarm.models.reporters import BaseReporter
 
 __module_name__ = "reporter_json_plugin"
@@ -9,15 +9,14 @@ __import_as__ = "JSONReporter"
 
 
 class JSONReporter(BaseReporter):
-    output_file: str = "report.json"
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    class Config:
-        arbitrary_types_allowed = True
+    output_file: str = "report.json"
 
     def report(self, data: BaseModel):
         report = {
             "timestamp": datetime.now().isoformat(),
-            "data": data.dict(),
+            "data": data.model_dump(),
         }
 
         try:

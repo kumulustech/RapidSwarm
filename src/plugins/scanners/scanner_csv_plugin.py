@@ -3,7 +3,7 @@ import io
 import warnings
 from typing import List, Union
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from rapidswarm.models.network_interface import NetworkInterface
 from rapidswarm.models.network_interface_type import NetworkInterfaceType
 from rapidswarm.models.node import Node
@@ -34,7 +34,7 @@ class CSVScanner(BaseScanner):
     )
     expected_headers: List[str] = EXPECTED_HEADERS
 
-    @validator("csv_file", "csv_data")
+    @field_validator("csv_file", "csv_data")
     def validate_csv_input(cls, v, values, **kwargs):
         if v is None and values.get("csv_data") is None:
             raise ValueError("Either 'csv_file' or 'csv_data' must be provided.")

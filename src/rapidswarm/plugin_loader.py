@@ -1,4 +1,4 @@
-import importlib
+import importlib.util
 import inspect
 import os
 import sys
@@ -31,13 +31,12 @@ def discover_plugins(plugin_type, base_class):
             logger.info(f"Found plugin file: {file}")
             # Look through the file for the first instance of a class that inherits from the base_class
             module_name = file[:-3]  # Remove the .py extension
-            module_path = f"{plugin_type}.{module_name}"
-            try:
-                module = importlib.import_module(module_path, package="plugins")
-            except ImportError as e:
-                logger.error(f"Failed to import {module_path}: {e}")
-                continue
-
+            file_path = os.path.join(plugin_dir, file)
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
+            logger.info(f"Loaded module: {module_name}")
             for name, obj in inspect.getmembers(module, inspect.isclass):
                 if issubclass(obj, base_class) and obj is not base_class:
                     logger.info(f"Found plugin class: {name}")

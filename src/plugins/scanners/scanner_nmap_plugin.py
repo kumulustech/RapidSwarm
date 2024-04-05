@@ -2,7 +2,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from typing import List
 
-from pydantic import validator
+from pydantic import field_validator
 
 from rapidswarm.models.node import Node
 from rapidswarm.models.scanners import BaseScanner
@@ -13,7 +13,7 @@ class NmapScanner(BaseScanner):
     scan_options: str = "-sn"  # Default to a simple host discovery scan
     # TODO: That's probably not the right scan option.
 
-    @validator("target_range")
+    @field_validator("target_range")
     def check_nmap_exists(cls, v):
         """
         Validates that Nmap is installed and available in the system PATH.
