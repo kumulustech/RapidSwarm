@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   install:
@@ -36,7 +36,14 @@ tasks:
     deps:
       - install
     cmds:
-      - poetry run python -m rapidswarm
+      - poetry run python -m rapidswarm config.yaml
+
+  runlocal:
+    desc: Run the RapidSwarm application against localhost
+    deps:
+      - install
+    cmds:
+      - poetry run python -m rapidswarm config-localhost.yaml
 
   clean:
     desc: Clean up generated files and directories

@@ -5,45 +5,10 @@ from pathlib import Path
 from loguru import logger
 from pydantic import ValidationError
 
-from rapidswarm.config import create_scanners, load_config
+from rapidswarm.rapidswarm import RapidSwarm
 
-
-class RapidSwarm:
-    def __init__(self, config_file, verbose=False):
-        self.config_file = config_file
-        self.config = None
-        self.scanners = []
-        self.verbose = verbose
-
-    def load_config(self):
-        try:
-            self.config = load_config(self.config_file)
-            logger.debug(f"Loaded configuration from {self.config_file}")
-        except FileNotFoundError as e:
-            logger.error(f"Configuration file '{self.config_file}' not found.")
-            raise FileNotFoundError(
-                f"Configuration file '{self.config_file}' not found."
-            ) from e
-        except ValidationError as e:
-            logger.error(f"Invalid configuration: {e}")
-            raise ValidationError(f"Invalid configuration: {e}") from e
-
-    def create_scanners(self):
-        try:
-            self.scanners = create_scanners(self.config)
-            logger.debug(f"Created scanners: {self.scanners}")
-        except ValidationError as e:
-            logger.error(f"Invalid scanner configuration: {e}")
-            raise ValidationError(f"Invalid scanner configuration: {e}") from e
-
-    def run_scanners(self):
-        for scanner in self.scanners:
-            logger.info(f"Running scanner: {type(scanner).__name__}")
-            nodes = scanner.scan()
-            logger.info("Scanned nodes:")
-            for node in nodes:
-                logger.info(node)
-            logger.info("")
+logger.remove()
+logger.add(sys.stderr, level="DEBUG")
 
 
 def main():
@@ -75,6 +40,14 @@ def main():
         rapidswarm.load_config()
         rapidswarm.create_scanners()
         rapidswarm.run_scanners()
+
+        # Create and run managers and reporters within the RapidSwarm instance
+        rapidswarm.create_managers()
+        rapidswarm.create_reporters()
+        results = rapidswarm.run_managers()
+
+        logger.info(f"Scan and testing results: {results}")
+
     except FileNotFoundError as e:
         logger.error(f"Error: {e}")
     except ValidationError as e:
@@ -84,6 +57,8 @@ def main():
         if args.verbose:
             logger.debug(f"Config: {rapidswarm.config}")
             logger.debug(f"Scanners: {rapidswarm.scanners}")
+            logger.debug(f"Managers: {rapidswarm.managers}")
+            logger.debug(f"Reporters: {rapidswarm.reporters}")
 
 
 if __name__ == "__main__":

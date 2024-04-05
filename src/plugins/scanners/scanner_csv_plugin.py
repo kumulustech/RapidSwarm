@@ -3,11 +3,11 @@ import io
 import warnings
 from typing import List, Union
 
-from pydantic import BaseModel, Field, validator
-
-from .network_interface_type import NetworkInterfaceType
-from .node import Node
-from .scanners import BaseScanner
+from pydantic import Field, field_validator
+from rapidswarm.models.network_interface import NetworkInterface
+from rapidswarm.models.network_interface_type import NetworkInterfaceType
+from rapidswarm.models.node import Node
+from rapidswarm.models.scanners import BaseScanner
 
 INFINIBAND_MAC_PREFIX = "00:02:c9"
 NODE_NAME_FIELD = "node_name"
@@ -34,7 +34,7 @@ class CSVScanner(BaseScanner):
     )
     expected_headers: List[str] = EXPECTED_HEADERS
 
-    @validator("csv_file", "csv_data")
+    @field_validator("csv_file", "csv_data")
     def validate_csv_input(cls, v, values, **kwargs):
         if v is None and values.get("csv_data") is None:
             raise ValueError("Either 'csv_file' or 'csv_data' must be provided.")
@@ -64,42 +64,35 @@ class CSVScanner(BaseScanner):
         extraneous_fields = csv_fields - node_fields
         if extraneous_fields:
             warnings.warn(
-                f"CSV headers contain the following extraneous fields that won't be parsed by the Node class: {', '.join(extraneous_fields)}"
+                "CSV headers contain the following extraneous fields that won't be "
+                f"parsed by the Node class: {', '.join(extraneous_fields)}"
             )
 
-    def scan(self) -> List[dict]:
-        nodes = []
+    def scan(self) -> List[Node]:
+        nodes_dict = {}
 
         try:
             if self.csv_data:
-                # CSV data is provided as a pre-loaded string
                 csv_data = io.StringIO(self.csv_data)
-                reader = csv.DictReader(csv_data, fieldnames=self.expected_headers)
             else:
-                # CSV data is provided as a file path
                 with open(self.csv_file, "r") as file:
-                    reader = csv.DictReader(file, fieldnames=self.expected_headers)
+                    csv_data = file
+            reader = csv.DictReader(csv_data)
 
             for row in reader:
-                node_name = row[NODE_NAME_FIELD]
-                interface_name = row[INTERFACE_NAME_FIELD]
-                mac_address = row[MAC_ADDRESS_FIELD]
-                ip_address = row[IP_ADDRESS_FIELD]
-
-                node = next((n for n in nodes if n[NODE_NAME_FIELD] == node_name), None)
-                if node is None:
-                    node = {NODE_NAME_FIELD: node_name, INTERFACES_FIELD: []}
-                    nodes.append(node)
-
-                interface = {
-                    INTERFACE_NAME_FIELD: interface_name,
-                    MAC_ADDRESS_FIELD: mac_address,
-                    IP_ADDRESS_FIELD: ip_address,
-                    INTERFACE_TYPE_FIELD: self.get_interface_type(mac_address),
-                }
-                node[INTERFACES_FIELD].append(interface)
+                node_id = row[NODE_NAME_FIELD]
+                if node_id not in nodes_dict:
+                    nodes_dict[node_id] = Node(
+                        id=node_id, hostname=node_id, network_interfaces=[]
+                    )
+                interface = NetworkInterface(
+                    mac_address=row[MAC_ADDRESS_FIELD],
+                    ip_address=row[IP_ADDRESS_FIELD],
+                    interface_type=self.get_interface_type(row[MAC_ADDRESS_FIELD]),
+                )
+                nodes_dict[node_id].network_interfaces.append(interface)
 
         except Exception as e:
             raise Exception(f"An error occurred while reading the CSV data: {str(e)}")
 
-        return nodes
+        return list(nodes_dict.values())

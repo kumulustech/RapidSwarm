@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -65,7 +65,6 @@ def test_run_method_calls_validation_and_execution_methods():
     ) as mock_execute_command, patch.object(
         DummyProbe, "parse_output", return_value="parsed output"
     ) as mock_parse_output:
-
         result = probe.run()
 
         mock_validate_nodes.assert_called_once()
